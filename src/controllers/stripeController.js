@@ -2,19 +2,18 @@
 const Stripe = require("stripe");
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // or your sk_test_...
 
-/**
- * Create PaymentIntent
- */
 exports.createPaymentIntent = async (req, res) => {
   try {
-    const { amount } = req.body; // the total you want to charge, in cents
-    // In test mode, you can pass a small amount (like 500 for $5.00).
+    const { amount } = req.body;
 
-    // Create a PaymentIntent with the specified amount and currency
+    // Create PaymentIntent with automatic_payment_methods for PaymentElement
     const paymentIntent = await stripe.paymentIntents.create({
-      amount, // e.g. 500 for $5
+      amount,
       currency: "usd",
-      // You can add metadata or description if needed
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      // optional metadata:
       metadata: { integration_check: "test_payment" },
     });
 
