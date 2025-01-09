@@ -1,19 +1,18 @@
 // stripeController.js
 const Stripe = require("stripe");
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // or your sk_test_...
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY); // e.g. sk_test_...
 
 exports.createPaymentIntent = async (req, res) => {
   try {
     const { amount } = req.body;
 
-    // Create PaymentIntent with automatic_payment_methods for PaymentElement
+    // DO NOT use automatic_payment_methods
+    // Instead, specify an array of payment_method_types that includes "card"
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
       currency: "usd",
-      automatic_payment_methods: {
-        enabled: true,
-      },
-      // optional metadata:
+      payment_method_types: ["card"], // critical
+      // optional metadata
       metadata: { integration_check: "test_payment" },
     });
 
