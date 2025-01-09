@@ -6,21 +6,20 @@ exports.createPaymentIntent = async (req, res) => {
   try {
     const { amount } = req.body;
 
-    // DO NOT use automatic_payment_methods
-    // Instead, specify an array of payment_method_types that includes "card"
+    // Create a PaymentIntent with card only.
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
       currency: "usd",
-      payment_method_types: ["card"], // critical
+      payment_method_types: ["card"], // <== do NOT enable automatic_payment_methods
       // optional metadata
       metadata: { integration_check: "test_payment" },
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       clientSecret: paymentIntent.client_secret,
     });
   } catch (error) {
     console.error("Error creating payment intent:", error);
-    res.status(400).json({ error: error.message });
+    return res.status(400).json({ error: error.message });
   }
 };
