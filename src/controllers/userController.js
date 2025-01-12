@@ -1,6 +1,7 @@
 // src/controllers/userController.js
 const jwt = require("jsonwebtoken");
 const userService = require("../services/userService");
+const { uploadFileToS3 } = require("../services/s3UploadService");
 
 /**
  * In a real-world app, store your secret in an environment variable.
@@ -20,6 +21,30 @@ async function register(req, res) {
       return res.status(400).json({ error: "Missing required fields." });
     }
 
+    // Initialize userImageUrl to a default or null
+    let userImageUrl = null;
+
+    // If a file was uploaded, upload it to S3
+    if (req.file) {
+      const fileBuffer = req.file.buffer; // Multer in-memory buffer
+      const mimeType = req.file.mimetype; // e.g. "image/png" or "image/jpeg"
+
+      // Generate a unique filename. E.g.: user_images/<username>_timestamp.png
+      const timestamp = Date.now();
+      const fileExtension = mimeType.split("/")[1]; // "png" or "jpeg" etc.
+      const s3FileName = `user_images/${username}_${timestamp}.${fileExtension}`;
+
+      // Upload to S3
+      userImageUrl = await uploadFileToS3(fileBuffer, s3FileName, mimeType);
+    }
+
+    // If user did not upload a file, set a default
+    if (!userImageUrl) {
+      userImageUrl =
+        "https://ecommerceproject4766.s3.amazonaws.com/user_images/default-profile.png";
+    }
+
+    // Pass userImageUrl to the service layer
     const newUser = await userService.registerUser({
       firstName,
       lastName,
@@ -28,11 +53,11 @@ async function register(req, res) {
       password,
       role,
       gender,
+      userImageUrl,
     });
 
     // Hide the password in the response
     const { password: _, ...userWithoutPassword } = newUser;
-
     return res.status(201).json(userWithoutPassword);
   } catch (error) {
     console.error("Error registering user:", error);

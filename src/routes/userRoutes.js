@@ -3,10 +3,11 @@ const express = require("express");
 const router = express.Router();
 
 const userController = require("../controllers/userController");
+const upload = require("../middlewares/uploadMiddleware");
+
 
 // Register
-router.post("/register", userController.register);
-
+router.post("/register", upload.single("userImage"), userController.register);
 // Login
 router.post("/login", userController.login);
 

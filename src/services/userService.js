@@ -16,6 +16,7 @@ async function registerUser({
   password,
   role,
   gender,
+  userImageUrl, // <--- NEW
 }) {
   // Check if user with same email or username already exists
   const existingUser = await prisma.user.findFirst({
@@ -39,8 +40,9 @@ async function registerUser({
       username,
       email,
       password: hashedPassword,
-      role, // defaults to "USER" if not provided
-      gender, // optional
+      role,       // defaults to "USER" if not provided
+      gender,     // optional
+      userImageUrl, // <--- store the S3 url in DB
     },
   });
 
